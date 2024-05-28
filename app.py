@@ -71,7 +71,7 @@ def handle_message(event):
         reply_message = "請輸入以下任一關鍵字：實習/說明會/徵才/活動/工讀/獎學金"
     else:
         filtered_data = []
-        with open('your_data.csv', newline='', encoding='utf-8') as csvfile:
+        with open('data.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             filtered_data = [row for row in reader if user_message in row['category']]
 
