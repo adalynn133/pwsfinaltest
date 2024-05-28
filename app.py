@@ -40,14 +40,12 @@ def handle_message(event):
         filtered_data = []
         with open('data.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
-            filtered_data = [row for row in reader if user_message in row['category']]
-            print("1")
+            filtered_data = [row for row in reader if user_message in row['c']]
 
         if filtered_data:
             reply_message = "\n\n".join(
-                [f"Title: {data['Title']}\nLink: {data['link']}" for data in filtered_data]
+                [f"Title: {data['a']}\nLink: {data['b']}" for data in filtered_data]
             )
-            print("2")
         else:
             reply_message = f"抱歉，找不到符合「{user_message}」的資料。"
     
