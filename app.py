@@ -4,7 +4,6 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import *
 import tempfile, os
 import datetime
-import googlemaps
 import time
 import traceback
 import json
@@ -39,27 +38,28 @@ def callback():
 # 處理訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    user_input = event.message.text.strip()
-    user_request = user_input.split(' ', 1)
+    user_message = event.message.text.strip()
     
-    if len(user_request) < 2:
-        reply_message = "請輸入有效的格式，例如：「1 實習」"
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_message))
-        return
+    # 定義可接受的關鍵字
+    valid_keywords = ["實習", "說明會", "徵才", "活動", "工讀", "獎學金"]
     
-    category = user_request[1]
-    
-    # 讀取 CSV 檔案
-    with open('your_data.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
+    if user_message in valid_keywords:
+        # 讀取 CSV 檔案
+        with open('data.csv', newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            
+            # 篩選出符合使用者訊息的資料
+            filtered_data = [row for row in reader if user_message in row['category']]
         
-        # 篩選出符合使用者輸入的資料
-        filtered_data = [row for row in reader if category in row['category']]
-    
-    if filtered_data:
-        reply_message = "\n".join([f"{data['title']}: {data['description']}" for data in filtered_data])
+        if filtered_data:
+            reply_message = "\n".join([f"Title: {data['title']}\nLink: {data['link']}" for data in filtered_data])
+        else:
+            reply_message = f"抱歉，找不到符合「{user_message}」的資料。"
     else:
-        reply_message = f"抱歉，找不到符合「{category}」的資料。"
+        reply_message = "請輸入有效的關鍵字：實習、說明會、徵才、活動、工讀、獎學金。"
+    
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_message))
+
     
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_message))
 if __name__ == "__main__":
