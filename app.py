@@ -165,7 +165,7 @@ def handle_message(event):
     filtered_df = df[df['Category'].str.contains(user_input)]
     if not filtered_df.empty:
         # 將符合條件的列的 Title 和 link 欄位組合成文字訊息
-        reply_message = "\n".join([f"{row['Title']}\n\n{row['Link']}\n" for _, row in filtered_df.iterrows()])
+        reply_message = "\n".join([f"{row['Title']}\n{row['Link']}\n" for _, row in filtered_df.iterrows()])
     else:
         reply_message = f"抱歉，找不到符合「{user_input}」的資料。"
     # 傳送回覆訊息到 Line
