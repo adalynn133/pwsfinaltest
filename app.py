@@ -35,7 +35,7 @@ def handle_message(event):
     # 讀取 CSV 檔案並轉換成 pandas DataFrame
     df = pd.read_csv('data.csv')
     # 篩選出符合使用者輸入文字的列
-    filtered_df = df[df['category'].str.contains(user_input)]
+    filtered_df = df[df['Category'].str.contains(user_input)]
     if not filtered_df.empty:
         # 將符合條件的列的 Title 和 link 欄位組合成文字訊息
         reply_message = "\n".join([f"Title: {row['Title']}\nLink: {row['link']}" for _, row in filtered_df.iterrows()])
