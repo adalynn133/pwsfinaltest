@@ -28,27 +28,20 @@ def callback():
         abort(400)
     return 'OK'
 
-
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    user_message = event.message.text.strip()
-    keywords = ['實習', '說明會', '徵才', '活動', '工讀', '獎學金']
-    
-    if user_message not in keywords:
-        reply_message = "請輸入以下任一關鍵字：實習/說明會/徵才/活動/工讀/獎學金"
+    user_input = event.message.text.strip()
+    # 打開 CSV 檔案並進行資料篩選
+    with open('data.csv', newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        # 篩選出包含使用者輸入文字的列
+        filtered_rows = [row for row in reader if user_input in row['category']]
+    if filtered_rows:
+        # 將篩選出的資料以文字訊息的形式組合
+        reply_message = "\n".join([f"{row['category']}: {row['title']}" for row in filtered_rows])
     else:
-        filtered_data = []
-        with open('data.csv', newline='', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile)
-            filtered_data = [row for row in reader if user_message in row['c']]
-
-        if filtered_data:
-            reply_message = "\n\n".join(
-                [f"Title: {data['a']}\nLink: {data['b']}" for data in filtered_data]
-            )
-        else:
-            reply_message = f"抱歉，找不到符合「{user_message}」的資料。"
-    
+        reply_message = f"抱歉，找不到符合「{user_input}」的資料。"
+    # 傳送回覆訊息到 Line
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_message))
 
 if __name__ == "__main__":
