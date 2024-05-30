@@ -290,7 +290,7 @@ def handle_message(event):
     # 合併兩個 DataFrame
     combined_df = pd.concat([df1, df2])
     # 篩選出符合使用者輸入文字的列
-    filtered_df = combined_df[combined_df['category'].str.contains(user_input, na=False)]
+    filtered_df = combined_df[combined_df['Category'].str.contains(user_input, na=False)]
     if not filtered_df.empty:
         # 將符合條件的列的 Title 和 link 欄位組合成文字訊息
         reply_message = "\n".join([f"{row['Title']}\n {row['link']}\n" for _, row in filtered_df.iterrows()])
