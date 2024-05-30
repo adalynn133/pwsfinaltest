@@ -254,9 +254,6 @@ print("CSV file saved as:", filename)
 
 
 
-
-
-
 #轉換到line聊天室
 app = Flask(__name__)
 static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
