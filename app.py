@@ -5,6 +5,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import csv
 import os
 import pandas as pd
+import json
 
 import requests
 from bs4 import BeautifulSoup
