@@ -16,15 +16,17 @@ from bs4 import BeautifulSoup
 import pandas as pd
 
 #引路人計畫
-# set the file name
-filename = "data2.csv"
-def clean_empty_rows(data2):
-    """
-    clean the empty row if it exists
-    """
-    return data2.dropna(how='all')
 
-# try to lead the data in, if not, create a new list (will occur at the very first try)
+# Set the file name
+filename = "data2.csv"
+
+def clean_empty_rows(data):
+    """
+    Clean the empty row if it exists
+    """
+    return data.dropna(how='all')
+
+# Try to load the existing data, if not, create new lists
 try:
     existing_data = pd.read_csv(filename)
     existing_data = clean_empty_rows(existing_data)
@@ -34,7 +36,6 @@ try:
     categories = existing_data['Category'].tolist()
     dates = existing_data['Release Date'].tolist()
     is_new = [False] * len(titles)
-    
 except FileNotFoundError:
     links = []
     titles = []
@@ -42,89 +43,77 @@ except FileNotFoundError:
     dates = []
     is_new = []
 
-# 用 url 區分 category
-url1 = 'https://ntucace.ntu.edu.tw/bulletin/index/category_key/7'  #實習
-url2 = 'https://ntucace.ntu.edu.tw/bulletin/index/category_key/13' #活動
-url3 = 'https://ntucace.ntu.edu.tw/bulletin/index/category_key/11' #活動
-url4 = 'https://ntucace.ntu.edu.tw/bulletin/index/category_key/14' #說明會
+# Function to scrape a category
+def scrape_category(url, category_name):
+    global links, titles, categories, dates, is_new
 
-# make requests
-response1 = requests.get(url1)
-response2 = requests.get(url2)
-response3 = requests.get(url3)
-response4 = requests.get(url4)
+    while True:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        announcement_items = soup.find_all("li", class_="list-item")
 
-# Parse the HTML content
-soup1 = BeautifulSoup(response1.text, 'html.parser')
-soup2 = BeautifulSoup(response2.text, 'html.parser')
-soup3 = BeautifulSoup(response3.text, 'html.parser')
-soup4 = BeautifulSoup(response4.text, 'html.parser')
+        # Get the information of each announcement
+        for item in announcement_items:
+            # Get title, use title to see if it already exists
+            title = item.find("div", class_="list-title").text.strip()
+            if title in titles:
+                continue
+            else:
+                is_new.append(True)
+                titles.append(title)
 
-#找到所有公告
-announcement_items1 = soup1.find_all("li",class_="list-item")
-announcement_items2 = soup2.find_all("li",class_="list-item")
-announcement_items3 = soup3.find_all("li",class_="list-item")
-announcement_items4 = soup4.find_all("li",class_="list-item")
+                # Get date
+                date = item.find("span", class_="start").text.strip()
+                month = item.find("span", class_="month").text.strip()
+                # Convert month to number
+                month_dict = {
+                    "January": '01', "February": '02', "March": '03', "April": '04', "May": '05',
+                    "June": '06', "July": '07', "August": '08', "September": '09', "October": '10',
+                    "November": '11', "December": '12'
+                }
+                month = month_dict.get(month, '00')
+                year = item.find("span", class_="year").text.strip()
+                dates.append(f"{year}-{month}-{date}")
 
-# get the information of each announcement
-for item in announcement_items1 + announcement_items2 + announcement_items3 + announcement_items4:
-# get title, use title to see if it already exit
-    title = item.find("div",class_="list-title").text
-    if title in titles:
-        continue
+                # Get category
+                categories.append(category_name)
+
+                # Get link
+                a_tag = item.find('a', class_='announcement-link')
+                if a_tag and 'href' in a_tag.attrs:
+                    link = a_tag['href']
+                    links.append(f'https://ntucace.ntu.edu.tw{link}')
+
+        # Locate the span element that contains '»'
+        next_page_element = soup.find('span', {'aria-hidden': 'true'}, text='»')
+        if next_page_element:
+            parent_anchor = next_page_element.find_parent('a')
+            next_page_link = parent_anchor['href']
+            if next_page_link == 'javascript:;':
+                break  # End of pagination
+            url = f'https://ntucace.ntu.edu.tw{next_page_link}'
+        else:
+            break  # No more pages
+
+# Scrape each category
+categories_urls = {
+    '實習': 'https://ntucace.ntu.edu.tw/bulletin/index/category_key/7',
+    '活動': [
+        'https://ntucace.ntu.edu.tw/bulletin/index/category_key/13',
+        'https://ntucace.ntu.edu.tw/bulletin/index/category_key/11'
+    ],
+    '說明會': 'https://ntucace.ntu.edu.tw/bulletin/index/category_key/14'
+}
+
+# Scrape all categories
+for category, urls in categories_urls.items():
+    if isinstance(urls, list):
+        for url in urls:
+            scrape_category(url, category)
     else:
-        is_new.append(True)
-        titles.append(title)
+        scrape_category(urls, category)
 
-    # get date
-        date = item.find("span",class_="start").text
-        month = item.find("span",class_="month").text 
-        #要把月份轉成數字
-        if month == "January":
-            month = '01'
-        elif month == "February":
-            month = '02'
-        elif month == "March":
-            month = '03'
-        elif month == "April":
-            month = '04'
-        elif month == "May":
-            month = '05'
-        elif month == "June":
-            month = '06'
-        elif month == "July":
-            month = '07'
-        elif month == "August":
-            month = '08'
-        elif month == "September":
-            month = '09'
-        elif month == "October":
-            month = 10
-        elif month == "November":
-            month = 11
-        elif month == "December":
-            month = 12
-        year = item.find("span",class_="year").text
-        dates.append(f"{year}-{month}-{date}")
-
-    # get category
-        if item in announcement_items1:
-            categories.append('實習') 
-        elif item in announcement_items2:
-            categories.append('活動')
-        elif item in announcement_items3:
-            categories.append('活動')
-        elif item in announcement_items4:
-            categories.append('說明會')
-
-    # get link
-        a_tag = item.find('a', class_='announcement-link')
-        if a_tag and 'href' in a_tag.attrs:
-            link = a_tag['href']
-            links.append(f'https://ntucace.ntu.edu.tw/{link}')
-            
-
-# Combine the data 
+# Combine the data
 final_data = pd.DataFrame({
     'Link': links,
     'Title': titles,
