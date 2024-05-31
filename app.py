@@ -267,7 +267,7 @@ def handle_message(event):
     filtered_df = combined_df[combined_df['Category'].str.contains(user_input, na=False)]
     if not filtered_df.empty:
         # 將符合條件的列的 Title 和 link 欄位組合成文字訊息，並加上數字編號
-        reply_message = "\n".join([f"{idx+1}. {row['Title']}\n {row['Link']}\n" for idx, row in enumerate(filtered_df.itertuples())])
+        reply_message = "\n".join([f"{idx+1}. {row.Title}\n {row.Link}\n" for idx, row in enumerate(filtered_df.itertuples())])
     else:
         reply_message = f"抱歉，找不到符合「{user_input}」的資料。"
     # 傳送回覆訊息到 Line
