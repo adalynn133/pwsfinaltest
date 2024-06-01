@@ -150,7 +150,7 @@ except FileNotFoundError:
     is_new = []
 
 base_url = 'https://career.ntu.edu.tw/board/index/tab/0'
-page_wanted = 5
+page_wanted = 4
 
 # Loop through each page
 for i in range(page_wanted):
