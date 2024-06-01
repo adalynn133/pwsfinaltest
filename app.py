@@ -44,9 +44,7 @@ except FileNotFoundError:
     is_new = []
 
 # Function to scrape a category
-def scrape_category(url, category_name):
-    global links, titles, categories, dates, is_new
-
+def scrape_category(url, category_name, links, titles, categories, dates, is_new):
     while True:
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -85,11 +83,11 @@ def scrape_category(url, category_name):
                     links.append(f'https://ntucace.ntu.edu.tw{link}')
 
         # Locate the span element that contains '»'
-        next_page_element = soup.find('span', {'aria-hidden': 'true'}, text='»')
+        next_page_element = soup.find('span', {'aria-hidden': 'true'}, string='»')
         if next_page_element:
             parent_anchor = next_page_element.find_parent('a')
             next_page_link = parent_anchor['href']
-            if next_page_link == 'javascript:;'or next_page_link == '/bulletin/index/category_key/7/page/0'or next_page_link == '/bulletin/index/category_key/11/page/0'or next_page_link == '/bulletin/index/category_key/13/page/0'or next_page_link == '/bulletin/index/category_key/14/page/0':
+            if next_page_link == 'javascript:;' or 'page/0' in next_page_link:
                 break  # End of pagination
             url = f'https://ntucace.ntu.edu.tw{next_page_link}'
         else:
@@ -109,9 +107,9 @@ categories_urls = {
 for category, urls in categories_urls.items():
     if isinstance(urls, list):
         for url in urls:
-            scrape_category(url, category)
+            scrape_category(url, category, links, titles, categories, dates, is_new)
     else:
-        scrape_category(urls, category)
+        scrape_category(urls, category, links, titles, categories, dates, is_new)
 
 # Combine the data
 final_data = pd.DataFrame({
