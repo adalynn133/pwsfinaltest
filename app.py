@@ -17,7 +17,6 @@ from bs4 import BeautifulSoup
 import pandas as pd
 
 #引路人計畫
-
 # Set the file name
 filename = "data2.csv"
 
@@ -68,9 +67,9 @@ def scrape_category(url, category_name):
                 month = item.find("span", class_="month").text.strip()
                 # Convert month to number
                 month_dict = {
-                    "January": '01', "February": '02', "March": '03', "April": '04', "May": '05',
-                    "June": '06', "July": '07', "August": '08', "September": '09', "October": '10',
-                    "November": '11', "December": '12'
+                    "January": '01', "February": '02', "March": '03', "April": '04',
+                    "May": '05', "June": '06', "July": '07', "August": '08', 
+                    "September": '09', "October": '10', "November": '11', "December": '12'
                 }
                 month = month_dict.get(month, '00')
                 year = item.find("span", class_="year").text.strip()
@@ -90,7 +89,7 @@ def scrape_category(url, category_name):
         if next_page_element:
             parent_anchor = next_page_element.find_parent('a')
             next_page_link = parent_anchor['href']
-            if next_page_link == 'javascript:;':
+            if next_page_link == 'javascript:;'or next_page_link == '/bulletin/index/category_key/7/page/0'or next_page_link == '/bulletin/index/category_key/11/page/0'or next_page_link == '/bulletin/index/category_key/13/page/0'or next_page_link == '/bulletin/index/category_key/14/page/0':
                 break  # End of pagination
             url = f'https://ntucace.ntu.edu.tw{next_page_link}'
         else:
@@ -125,6 +124,7 @@ final_data = pd.DataFrame({
 
 # Write data to CSV file
 final_data.to_csv(filename, index=False, encoding='utf-8-sig')
+
 
 #學生職涯中心
 # Set the file name
